@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Blog | {% if  title%}{{title}}{% else %}All Posts{% endif %}
+{% endblock title %}
+
+{% block content %}
+<section class="sp">
+  <div class="container">
+    <div class="page-top">
+      <div class="top flex">
+        <div class="page-name">
+          {% if not title %}
+              <h1 >All Blogs</h1>
+          {% else %}
+              <h1>{{title}}</h1>
+          {% endif %}
+        </div>
+        <form class="search-bar s-active" method="get">
+          <input type="text" placeholder="Search" name="q" value="{{search_query}}"/>
+          <button type="submit" class="animated-search">
+            <i class="uil uil-search"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="sp">
+  <div class="container">
+    <div class="grid-3">
+      {% if not posts %}
+        <p>No posts!</p>
+      {% else %}
+        {% for post in posts %} 
+          <!-- card -->
+          <a href="{% url 'post_page' post.slug %}">
+            <div class="card">
+                <div class="post-img">
+                  <img src="{{post.image.url}}" alt="" />
+                  <div class="tag">{{post.tags.all.0.name}}</div>
+                </div>
+                <div class="card-content">
+                  <h3>
+                      {{post.title}}
+                  </h3>
+                  <div class="author">
+                      <div class="profile-pic">
+                        <img src="{{post.author.profile.profile_image.url}}" alt="" />
+                      </div>
+                      <div class="details">
+                        <p>{{post.author.username}}</p>
+                        <small>{{post.last_update|date}}</small>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </a>
+          <!-- card end-->
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock content %}
+    
+{% block subscribeForm %}
+  {{subscribe_form.as_p}}
+  {{subscribe_form.errors}}
+{% endblock subscribeForm %}
+
+{% block subscribeSuccess %}
+  {% if "Subscribed" in subscribe_message %}
+    {{subscribe_message}}
+  {% else %}
+    {% for error in subscribe_message.values %}
+      {{error}}
+    {% endfor %}
+  {% endif %}
+{% endblock subscribeSuccess %}

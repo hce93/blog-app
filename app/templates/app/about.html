@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Blog | About{% endblock title %}
+    
+
+{% block content %} 
+<section class="sp">
+  <div class="container">
+      <div class="page-top">
+          <div class="top flex">
+              <div class="page-name">
+                  <h1>About</h1>
+              </div>
+          
+          </div>
+      </div>
+  </div>
+  <section class="sp">
+      <div class="container">
+          <p>{{website_info.about}}</p>
+      </div>
+  </section>
+</section>
+
+{% endblock content %}
+
+{% block subscribeForm %}
+  {{subscribe_form.as_p}}
+  {{subscribe_form.errors}}
+{% endblock subscribeForm %}
+
+{% block subscribeSuccess %}
+  {% if "Subscribed" in subscribe_message %}
+    {{subscribe_message}}
+  {% else %}
+    {% for error in subscribe_message.values %}
+      {{error}}
+    {% endfor %}
+  {% endif %}
+{% endblock subscribeSuccess %}

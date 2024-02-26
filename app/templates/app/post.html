@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog | The Super Blog{% endblock title %}
+{% load static %}
+
+{% block content %}
+    
+  <div class="container">
+    <div class="layout">
+      <!-- left layout -->
+      <div class="left">
+       {% comment %} <div class="page-top">
+          <div class="top flex">
+            <div class="page-name">
+              <h1>Blog</h1>
+            </div>
+          </div>
+        </div>  {% endcomment %}
+
+          <div class="typo">
+            <h1 class="title blog-title">
+              {{post.title}}
+            </h1>
+            
+          {% if user == post.author %}
+            <a class="learn" href="{% url 'create_post' %}?id={{post.id}}">Edit your post<span class="material-icons">trending_flat</span></a>            
+          {% endif %}
+            <div class="timeline">
+              <div class="track">
+                <i class="uil uil-clock"></i>
+                <p class="time">{{post.last_update|date}}</p>
+              </div>
+              <div class="track">
+                <i class="uil uil-users-alt"></i>
+                <p class="view-count">{{post.view_count}} view{{post.view_count|pluralize}}</p>
+              </div>
+              <div class="track">
+                {% if user.is_authenticated %}
+                  <form action="{% url 'bookmark_post' post.slug %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="post_id" value="{{post.id}}">
+                    {% if is_bookmarked %}
+                      <button type="submit" class="btn btn-info">
+                        <i class="fa-solid fa-bookmark"></i>
+                        <p class="bookmark">Remove Bookmark</p>
+                      </button>
+                    {% else %}
+                      <button type="submit" class="btn btn-info">
+                        <i class="uil uil-bookmark-full"></i>
+                        <p class="bookmark">Bookmark</p>
+                      </button>
+                    {% endif %}
+                  </form>
+                {% else %}
+                  <a class="track" href="{% url 'login' %}">
+                    <i class="uil uil-bookmark-full"></i>
+                    <p class="bookmark">Bookmark</p>
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        <section class="mt">
+          <div class="container">
+            <!-- blog post -->
+            <div class="blog-post">
+              <div class="post-img blog-img">
+                <img src="{{post.image.url}}" alt="" class="main-post-image"/>
+              </div>
+              <div class="blog-post-content">
+                <p>
+                  {{post.content|safe}}
+                </p>
+                <div class="blog-tags">
+                  
+                  {% for tag in post.tags.all %}
+                    <a href="{% url 'tag_page' tag.slug %}" class="tag">{{tag.name}}</a>
+                  {% endfor %}
+                
+                </div>
+                <div class="social-share">
+                  <div class="reactions">
+                    {% if user.is_authenticated %}
+                    <div class="likes">
+                      <form action="{% url 'like_post' post.slug %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="post_id" value="{{post.id}}">
+                        <button type="submit" class="btn btn-info">
+                          
+                          {% if is_liked %}
+                            <i class="fa-solid fa-heart"></i>
+                          {% else %}
+                            <i class="uil uil-heart"></i> 
+                          {% endif %}
+                          <p>{{post.like_count}}</p>
+                        </button>
+                      </form>
+                    </div>
+                    {% else %}
+                    <a class="track" href="{% url 'login' %}">
+                      <i class="uil uil-heart"></i><span>{{post.like_count}}</span>
+  
+                    </a>
+                    {% endif %}
+                    <div class="total-comments">
+                      <i class="uil uil-comment-alt"></i>
+                      <span>{{comments.count}}</span>
+                    </div>
+                  </div>
+                  <div class="share">
+                    <div class="social">
+                      <a href="https://www.facebook.com" target="_blank">
+                        <i class="fa-brands fa-facebook-f"></i>
+                      </a>
+                      <a href="https://www.instagram.com" target="_blank">
+                        <i class="fa-brands fa-instagram"></i>
+                      </a>
+                      <a href="https://www.linkedin.com" target="_blank">
+                        <i class="fa-brands fa-linkedin-in"></i>
+                      </a>
+                      <a href="https://www.twitter.com" target="_blank">
+                        <i class="fa-brands fa-twitter"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- comments start -->
+                
+                {% for comment in comments %}
+                  
+                  {% if comment.parent is None %}                    
+                    <div class="user-comment">
+                      <div class="author">
+                        <div class="profile-pic">
+                          <img src="{% static 'images/author.svg' %}" alt="" />
+                        </div>
+                        <div class="details">
+                          <p>{{comment.name}}</p>
+                          <small>{{comment.date|date}}</small>
+                        </div>
+                      </div>
+                      <div class="comment-sec-main">
+                        <div class="comment-sec">
+                          <div class="comment">
+                            <p>
+                              {{comment.content}}
+                            </p>
+                          </div>
+                          <div class="reply">
+                            <button onclick="toggleDiv(this)">Reply</button>
+                          </div>
+                          <div class="comment-box" id="comment-reply-box">
+                            <h3>Reply to post</h3>
+                            <p>
+                              Your email address will not be published. Required fields
+                              are marked<span>*</span>
+                            </p>
+                            <form method="POST">
+                              {% csrf_token %}
+                              {{form.content}}
+                              <div class="grid-3">
+                                <input type="hidden" name="post_id" value="{{post.id}}">
+                                <input type="hidden" name="parent" value="{{comment.id}}">
+                                {{form.name}}
+                                {{form.email}}
+                                {{form.website}}
+                              </div>
+              
+                              <button class="btn btn-primary rounded">
+                                Post Reply
+                              </button>
+                            </form>
+                          </div>  
+
+                        </div>
+                        
+                        {% for reply in comment.replies.all %}
+                          
+                        <div class="public-reply">
+                          <div class="author">
+                            <div class="profile-pic">
+                              <img src="{% static 'images/author.svg' %}" alt="" />
+                            </div>
+                            <div class="details">
+                              <p>{{reply.name}}</p>
+                              <small>{{reply.date|date}}</small>
+                            </div>
+                          </div>
+                          <div class="comment">
+                            <p>
+                              {{reply.content}}
+                            </p>
+                          </div>
+                        </div>
+                        {% endfor %}
+
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+                <!-- user comment end -->
+              </div>
+            </div>
+            <div class="comment-box">
+              <h3>Leave a new comment to this post</h3>
+              <p>
+                Your email address will not be published. Required fields
+                are marked<span>*</span>
+              </p>
+              <form method="post">
+                {% csrf_token %}
+                {{form.content}}
+                <div class="grid-3">
+                  <input type="hidden" name="post_id" value="{{post.id}}">
+                  {{form.name}}
+                  {{form.email}}
+                  {{form.website}}
+                </div>
+                <button class="btn btn-primary rounded">
+                  Post comment
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </div>
+      <!-- left layout end -->
+
+      <!-- right layout -->
+      <div class="right">
+        <div class="block">
+          <h2 class="title2">Most recent</h2>
+          {% for post in recent_posts %}
+            <div class="recent-post">
+              <div class="rounded-img">
+                <img src="{{post.image.url}}" alt="" />
+              </div>
+              <div class="recent-content">
+                <h3>
+                  {{post.title}}
+                </h3>
+                <a class="learn" href="{% url 'post_page' post.slug %}"
+                  >Learn more
+                  <span class="material-icons"> trending_flat </span></a
+                >
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+        <div class="block r-blog">
+          <h2 class="title2">More From This Author</h2>
+          
+          {% if not related_posts %}
+            <p>No more posts from {{post.author.first_name}}</p>
+          {% else %}  
+            {% for post in related_posts %}
+            <!-- card -->
+              <a href="{% url 'post_page' post.slug %}">
+                <div class="card">
+                  <div class="post-img">
+                    <img src="{{post.image.url}}" alt="" />
+                    <div class="tag">{{post.tags.all.0.name}}</div>
+                  </div>
+                  <div class="card-content">
+                    <h3>
+                      {{post.title}}
+                    </h3>
+                    <div class="author">
+                      <div class="profile-pic">
+                        <img src="{{post.author.profile.profile_image.url}}" alt="" />
+                      </div>
+                      <div class="details">
+                        <p>{{post.author.first_name}}</p>
+                        <small>{{post.last_update|date}}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            <!-- card end-->
+            {% endfor %}
+          {% endif %}
+
+        </div>
+        <div class="block">
+          <h2 class="title2">Top Author</h2>
+          {% for author in top_authors %}
+            <div class="recent-post">
+              <div class="rounded-img">
+                <img src="{{author.profile.profile_image.url}}" alt="" />
+              </div>
+              <div class="recent-content">
+                <h3>
+                  {{author.first_name}}
+                </h3>
+                <a class="learn" href="http://127.0.0.1:8000/author/admin"
+                  >Learn more
+                  <span class="material-icons"> trending_flat </span></a
+                >
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="block">
+          <h2 class="title2">Top Tags</h2>
+          <div class="blog-tags">
+            {% for tag in tags %}
+              <a class="tag" href="{% url 'tag_page' tag.slug %}">{{tag.name}}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <!-- right layout end -->
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block subscribeForm %}
+  {{subscribe_form.as_p}}
+  {{subscribe_form.errors}}
+{% endblock subscribeForm %}
+
+{% block subscribeSuccess %}
+  {% if "Subscribed" in subscribe_message %}
+    {{subscribe_message}}
+  {% else %}
+    {% for error in subscribe_message.values %}
+      {{error}}
+    {% endfor %}
+  {% endif %}
+{% endblock subscribeSuccess %}
+  

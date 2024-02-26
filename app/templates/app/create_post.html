@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Blog | Create Post{% endblock title %}
+
+
+{% block content %}
+<section class="sp">
+    <div class="container">
+        <div class="page-name">
+        <h1>Create a Post</h1>
+        </div>
+        <form method="post" class="form create-post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="title-bar input">
+                {{post_form.title}}
+            </div>
+            <div class="resizeable-textarea input">
+                {{post_form.content}}
+            </div>
+            <div class="form-image input">
+                <p>Image Upload:</p>
+                <div class="tag-div">
+                {{post_form.image}}
+                </div>
+            </div>
+            <div class="form-tags input">
+                <p>Tags: </p>
+                {{post_form.tags}}
+            </div>
+            <button class="btn btn-primary rounded" type="submit">Post</button>
+        </form>
+    </div>
+</section>
+    
+{% endblock content %}
+    
+    
